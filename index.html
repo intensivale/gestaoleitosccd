@@ -461,6 +461,256 @@ body {
         grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     }
 }
+
+/* ========== SOLICITAÇÕES ========== */
+.solicitacoes-container {
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.solicitacoes-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #26a69a;
+}
+
+.solicitacoes-header h2 {
+    color: #00796b;
+    margin: 0;
+}
+
+.btn-toggle {
+    padding: 8px 15px;
+    background: #26a69a;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-toggle:hover {
+    background: #00796b;
+}
+
+.solicitacoes-lista {
+    display: grid;
+    gap: 15px;
+}
+
+.solicitacao-card {
+    border-radius: 10px;
+    padding: 20px;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.solicitacao-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.solicitacao-card.prioridade-alta {
+    background: #ffebee;
+    border-left: 5px solid #c62828;
+}
+
+.solicitacao-card.prioridade-media {
+    background: #fff3e0;
+    border-left: 5px solid #f57c00;
+}
+
+.solicitacao-card.prioridade-baixa {
+    background: #f1f8e9;
+    border-left: 5px solid #558b2f;
+}
+
+.solicitacao-header-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 15px;
+}
+
+.solicitacao-info-principal {
+    flex: 1;
+}
+
+.solicitacao-paciente {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.solicitacao-dados-basicos {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.solicitacao-dados-basicos span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.solicitacao-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.badge-prioridade {
+    background: #c62828;
+    color: white;
+}
+
+.badge-warning {
+    background: #f57c00;
+    color: white;
+}
+
+.badge-info {
+    background: #0277bd;
+    color: white;
+}
+
+.badge-success {
+    background: #2e7d32;
+    color: white;
+}
+
+.solicitacao-acoes {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-acao {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.btn-aprovar {
+    background: #2e7d32;
+    color: white;
+}
+
+.btn-aprovar:hover {
+    background: #1b5e20;
+}
+
+.btn-negar {
+    background: #c62828;
+    color: white;
+}
+
+.btn-negar:hover {
+    background: #8e0000;
+}
+
+.btn-detalhes {
+    background: #0277bd;
+    color: white;
+}
+
+.btn-detalhes:hover {
+    background: #01579b;
+}
+
+.solicitacao-status {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-pendente {
+    background: #fff3e0;
+    color: #f57c00;
+    border: 2px solid #f57c00;
+}
+
+.status-aprovada {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 2px solid #2e7d32;
+}
+
+.status-negada {
+    background: #ffebee;
+    color: #c62828;
+    border: 2px solid #c62828;
+}
+
+.alerta-solicitacoes {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    padding: 15px 20px;
+    background: #c62828;
+    color: white;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    z-index: 9999;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.sem-solicitacoes {
+    text-align: center;
+    padding: 40px;
+    color: #999;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .solicitacao-dados-basicos {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .solicitacao-acoes {
+        flex-direction: column;
+    }
+    
+    .btn-acao {
+        width: 100%;
+    }
+}
+
 </style>
 
 <!-- Firebase SDK -->
@@ -547,6 +797,21 @@ let currentUser = null;
     <div class="legenda">
         <div class="legenda-item">
             <div class="legenda-cor ocupado"></div>
+
+    <!-- SOLICITAÇÕES PENDENTES -->
+    <div class="solicitacoes-container" id="solicitacoesContainer" style="display: none;">
+        <div class="solicitacoes-header">
+            <h2>🔔 Solicitações de Vaga Pendentes (<span id="totalSolicitacoes">0</span>)</h2>
+            <button class="btn-toggle" onclick="toggleSolicitacoes()">Ocultar</button>
+        </div>
+        <div id="alertaSolicitacoes" class="alerta-solicitacoes" style="display: none;">
+            🚨 <span id="textoAlerta"></span>
+        </div>
+        <div class="solicitacoes-lista" id="solicitacoesLista">
+            <!-- Solicitações serão inseridas aqui via JavaScript -->
+        </div>
+    </div>
+
             <span>Ocupado (paciente internado)</span>
         </div>
         <div class="legenda-item">
@@ -700,6 +965,7 @@ auth.onAuthStateChanged(user => {
 function inicializarSistema() {
     renderizarLeitos();
     iniciarListenerTempoReal();
+    iniciarListenerSolicitacoes();
 }
 
 function renderizarLeitos() {
@@ -958,6 +1224,268 @@ function limparReserva() {
         .catch(error => {
             alert('Erro ao liberar: ' + error.message);
         });
+}
+
+// ========== SOLICITAÇÕES ==========
+
+let dadosSolicitacoes = {};
+let audioAlerta = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFAxMo+Duu2MdBjiP1/HLdywFI3fH8N2PQAoUXrTp66hVFAxMo+Duu2MdBjiP1/HLdywFI3fH8N2PQAoUXrTp66hVFAxMo+Duu2MdBjiP1/HLdywFI3fH8N2PQAoUXrTp66hVFAxMo+Duu2MdBjiP1/HLdywFI3fH8N2PQAoUXrTp66hVFAxMo+Duu2MdBjiP1/HLdywFI3fH8N2PQAoUXrTp66hVFA==');
+
+function iniciarListenerSolicitacoes() {
+    db.collection('solicitacoes').onSnapshot(snapshot => {
+        const anterior = Object.keys(dadosSolicitacoes).length;
+        dadosSolicitacoes = {};
+        
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            dadosSolicitacoes[doc.id] = { id: doc.id, ...data };
+        });
+        
+        const atual = Object.keys(dadosSolicitacoes).length;
+        
+        if (anterior > 0 && atual > anterior) {
+            mostrarAlertaNovaSolicitacao();
+            tocarSom();
+        }
+        
+        renderizarSolicitacoes();
+    });
+}
+
+function renderizarSolicitacoes() {
+    const lista = document.getElementById('solicitacoesLista');
+    const container = document.getElementById('solicitacoesContainer');
+    const totalSpan = document.getElementById('totalSolicitacoes');
+    
+    const solicitacoes = Object.values(dadosSolicitacoes).filter(s => s.status === 'pendente');
+    
+    totalSpan.textContent = solicitacoes.length;
+    
+    if (solicitacoes.length === 0) {
+        container.style.display = 'none';
+        lista.innerHTML = '<div class="sem-solicitacoes">Nenhuma solicitação pendente no momento.</div>';
+        return;
+    }
+    
+    container.style.display = 'block';
+    
+    solicitacoes.sort((a, b) => {
+        const prioridades = { alta: 3, media: 2, baixa: 1 };
+        if (prioridades[a.prioridade] !== prioridades[b.prioridade]) {
+            return prioridades[b.prioridade] - prioridades[a.prioridade];
+        }
+        return new Date(b.dataHoraSolicitacao) - new Date(a.dataHoraSolicitacao);
+    });
+    
+    lista.innerHTML = solicitacoes.map(sol => criarCardSolicitacao(sol)).join('');
+}
+
+function criarCardSolicitacao(sol) {
+    const dataFormatada = new Date(sol.dataHoraSolicitacao).toLocaleString('pt-BR');
+    const badges = [];
+    
+    if (sol.instabilidadeHemodinamica) badges.push('<span class="badge badge-prioridade">⚠️ Instab. Hemodinâmica</span>');
+    if (sol.instabilidadeRespiratoria) badges.push('<span class="badge badge-prioridade">⚠️ Instab. Respiratória</span>');
+    if (sol.sepse) badges.push('<span class="badge badge-warning">🦠 Sepse</span>');
+    if (sol.insuficienciaRenal) badges.push('<span class="badge badge-warning">🩺 Insuf. Renal</span>');
+    if (sol.alteracaoConsciencia) badges.push('<span class="badge badge-warning">🧠 Alt. Consciência</span>');
+    if (sol.isolamentoRespiratorio) badges.push('<span class="badge badge-info">😷 Isolamento</span>');
+    if (sol.reservaCirurgica) badges.push('<span class="badge badge-info">🏥 Pós-Cirúrgico</span>');
+    
+    // Formatar local com leito
+    const localCompleto = sol.leitoAlocacao 
+        ? `${sol.localAlocacao} - ${sol.leitoAlocacao}` 
+        : sol.localAlocacao;
+    
+    return `
+        <div class="solicitacao-card prioridade-${sol.prioridade}" onclick="verDetalhesSolicitacao('${sol.id}')">
+            <div class="solicitacao-status status-${sol.status}">
+                ${sol.status === 'pendente' ? '🕐 Pendente' : sol.status === 'aprovada' ? '✅ Aprovada' : '❌ Negada'}
+            </div>
+            
+            <div class="solicitacao-header-card">
+                <div class="solicitacao-info-principal">
+                    <div class="solicitacao-paciente">${sol.nomePaciente}</div>
+                    <div class="solicitacao-dados-basicos">
+                        <span>👤 ${sol.idade} anos</span>
+                        <span>📍 ${localCompleto}</span>
+                        <span>👨‍⚕️ ${sol.nomeSolicitante}</span>
+                        <span>🕐 ${dataFormatada}</span>
+                    </div>
+                    <div style="margin-top: 10px; color: #555;">
+                        <strong>Diagnóstico:</strong> ${sol.diagnostico}
+                    </div>
+                </div>
+            </div>
+            
+            ${badges.length > 0 ? `
+                <div class="solicitacao-badges">
+                    ${badges.join('')}
+                </div>
+            ` : ''}
+            
+            <div class="solicitacao-acoes" style="margin-top: 15px;" onclick="event.stopPropagation()">
+                <button class="btn-acao btn-detalhes" onclick="verDetalhesSolicitacao('${sol.id}')">
+                    📋 Detalhes
+                </button>
+                <button class="btn-acao btn-aprovar" onclick="atualizarStatusSolicitacao('${sol.id}', 'aprovada')">
+                    ✅ Aprovar
+                </button>
+                <button class="btn-acao btn-negar" onclick="atualizarStatusSolicitacao('${sol.id}', 'negada')">
+                    ❌ Negar
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function toggleSolicitacoes() {
+    const container = document.getElementById('solicitacoesContainer');
+    const btn = event.target;
+    
+    if (container.style.display === 'none') {
+        container.style.display = 'block';
+        btn.textContent = 'Ocultar';
+    } else {
+        container.style.display = 'none';
+        btn.textContent = 'Mostrar';
+    }
+}
+
+function atualizarStatusSolicitacao(id, novoStatus) {
+    if (confirm(`Deseja realmente ${novoStatus === 'aprovada' ? 'aprovar' : 'negar'} esta solicitação?`)) {
+        db.collection('solicitacoes').doc(id).update({
+            status: novoStatus,
+            dataHoraAtualizacao: new Date().toISOString(),
+            atualizadoPor: currentUser ? currentUser.email : ''
+        })
+        .then(() => {
+            alert(`Solicitação ${novoStatus === 'aprovada' ? 'aprovada' : 'negada'} com sucesso!`);
+        })
+        .catch(error => {
+            alert('Erro ao atualizar: ' + error.message);
+        });
+    }
+}
+
+function verDetalhesSolicitacao(id) {
+    const sol = dadosSolicitacoes[id];
+    if (!sol) return;
+    
+    let detalhes = `═══════════════════════════════════════
+📋 DETALHES DA SOLICITAÇÃO
+═══════════════════════════════════════
+
+👤 DADOS DO PACIENTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Nome: ${sol.nomePaciente}
+Idade: ${sol.idade} anos
+Diagnóstico: ${sol.diagnostico}
+Local: ${sol.localAlocacao}${sol.leitoAlocacao ? ' - ' + sol.leitoAlocacao : ''}
+Solicitante: ${sol.nomeSolicitante}
+Data/Hora: ${new Date(sol.dataHoraSolicitacao).toLocaleString('pt-BR')}
+Prioridade: ${sol.prioridade.toUpperCase()}
+`;
+
+    if (sol.reservaCirurgica) {
+        detalhes += `\n🏥 CIRURGIA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+        detalhes += `Data: ${sol.dataCirurgia || 'Não informada'}\n`;
+        detalhes += `Hemocomponentes: ${sol.hemocomponentes || 'Não informado'}\n`;
+    }
+
+    if (sol.cardiovascular) {
+        detalhes += `\n❤️ CARDIOVASCULAR\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+        detalhes += `Mupirocina: ${sol.mupirocina || 'Não informado'}\n`;
+        if (sol.dataInicioMupirocina) {
+            detalhes += `Data Início: ${sol.dataInicioMupirocina}\n`;
+        }
+    }
+
+    if (sol.instabilidadeHemodinamica) {
+        detalhes += `\n💉 HEMODINÂMICA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+        if (sol.drogas) {
+            Object.keys(sol.drogas).forEach(droga => {
+                detalhes += `${droga}: ${sol.drogas[droga]}\n`;
+            });
+        }
+        if (sol.volumeInfundido) {
+            detalhes += `Volume: ${sol.volumeInfundido}\n`;
+        }
+    }
+
+    if (sol.instabilidadeRespiratoria) {
+        detalhes += `\n🫁 RESPIRATÓRIA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+        detalhes += `Aporte O₂: ${sol.aporteO2 || 'Não informado'}\n`;
+        if (sol.litrosO2) {
+            detalhes += `Litros/FiO₂: ${sol.litrosO2}\n`;
+        }
+        if (sol.vm) {
+            detalhes += `Modo VM: ${sol.vm.modo}\n`;
+            detalhes += `PS/Pinsp: ${sol.vm.ps}\n`;
+            detalhes += `VC: ${sol.vm.vc}\n`;
+            detalhes += `FR: ${sol.vm.fr}\n`;
+            detalhes += `PEEP: ${sol.vm.peep}\n`;
+            detalhes += `FiO₂: ${sol.vm.fio2}\n`;
+            detalhes += `Ppico: ${sol.vm.ppico}\n`;
+        }
+    }
+
+    if (sol.sepse) {
+        detalhes += `\n🦠 SEPSE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+        if (sol.antibioticos && sol.antibioticos.length > 0) {
+            detalhes += `Antibióticos: ${sol.antibioticos.join(', ')}\n`;
+        }
+        detalhes += `Culturas: ${sol.culturasColetadas || 'Não informado'}\n`;
+        if (sol.tiposCultura && sol.tiposCultura.length > 0) {
+            detalhes += `Tipos: ${sol.tiposCultura.join(', ')}\n`;
+        }
+        if (sol.motivoNaoCultura) {
+            detalhes += `Motivo: ${sol.motivoNaoCultura}\n`;
+        }
+    }
+
+    if (sol.invasivos && sol.invasivos.length > 0) {
+        detalhes += `\n💉 INVASIVOS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+        sol.invasivos.forEach((inv, i) => {
+            detalhes += `${i + 1}. ${inv.descricao} (${inv.dataInsercao || 'Data não informada'})\n`;
+        });
+    }
+
+    if (sol.insuficienciaRenal) {
+        detalhes += `\n🩺 FUNÇÃO RENAL\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+        detalhes += `Creatinina: ${sol.creatinina || 'Não informada'}\n`;
+        detalhes += `Ureia: ${sol.ureia || 'Não informada'}\n`;
+    }
+
+    if (sol.alteracaoConsciencia) {
+        detalhes += `\n🧠 CONSCIÊNCIA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+        detalhes += `Glasgow: ${sol.glasgow || 'Não informado'}\n`;
+    }
+
+    if (sol.isolamentoRespiratorio) {
+        detalhes += `\n😷 ISOLAMENTO RESPIRATÓRIO\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSim\n`;
+    }
+
+    detalhes += `\n═══════════════════════════════════════`;
+
+    alert(detalhes);
+}
+
+function mostrarAlertaNovaSolicitacao() {
+    const alerta = document.getElementById('alertaSolicitacoes');
+    const texto = document.getElementById('textoAlerta');
+    const total = Object.values(dadosSolicitacoes).filter(s => s.status === 'pendente').length;
+    
+    texto.textContent = `Nova solicitação! Total: ${total}`;
+    alerta.style.display = 'block';
+    
+    setTimeout(() => {
+        alerta.style.display = 'none';
+    }, 5000);
+}
+
+function tocarSom() {
+    audioAlerta.play().catch(e => console.log('Erro ao tocar som:', e));
 }
 
 // Enter para login
