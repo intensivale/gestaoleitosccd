@@ -802,7 +802,12 @@ let currentUser = null;
     <div class="solicitacoes-container" id="solicitacoesContainer" style="display: none;">
         <div class="solicitacoes-header">
             <h2>🔔 Solicitações de Vaga Pendentes (<span id="totalSolicitacoes">0</span>)</h2>
-            <button class="btn-toggle" onclick="toggleSolicitacoes()">Ocultar</button>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn-toggle" onclick="exportarParaExcel()" style="background: #4caf50;">
+                    📊 Exportar Excel
+                </button>
+                <button class="btn-toggle" onclick="toggleSolicitacoes()">Ocultar</button>
+            </div>
         </div>
         <div id="alertaSolicitacoes" class="alerta-solicitacoes" style="display: none;">
             🚨 <span id="textoAlerta"></span>
@@ -1297,11 +1302,29 @@ function criarCardSolicitacao(sol) {
         ? `${sol.localAlocacao} - ${sol.leitoAlocacao}` 
         : sol.localAlocacao;
     
+    // Calcular tempo decorrido
+    const tempoDecorrido = sol.status === 'pendente' 
+        ? calcularTempoDecorridoAtivo(sol.dataHoraSolicitacao, sol.id)
+        : sol.tempoProcessamento || calcularTempoProcessamento(sol.dataHoraSolicitacao);
+    
+    // Informação de alocação se aprovada
+    const infoAlocacao = sol.status === 'aprovada' && sol.ctiAlocado 
+        ? `<div style="margin-top: 10px; padding: 10px; background: #e8f5e9; border-radius: 6px; border-left: 3px solid #4caf50;">
+            <strong>✅ Alocado em:</strong> ${sol.ctiAlocado.replace('CTI', 'CTI ')} - Leito ${sol.leitoAlocado}
+           </div>`
+        : '';
+    
     return `
         <div class="solicitacao-card prioridade-${sol.prioridade}" onclick="verDetalhesSolicitacao('${sol.id}')">
             <div class="solicitacao-status status-${sol.status}">
                 ${sol.status === 'pendente' ? '🕐 Pendente' : sol.status === 'aprovada' ? '✅ Aprovada' : '❌ Negada'}
             </div>
+            
+            ${sol.status === 'pendente' ? `
+                <div style="position: absolute; top: 15px; left: 15px; background: #ff9800; color: white; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                    ⏱️ <span id="cronometro-${sol.id}">${tempoDecorrido}</span>
+                </div>
+            ` : ''}
             
             <div class="solicitacao-header-card">
                 <div class="solicitacao-info-principal">
@@ -1311,10 +1334,12 @@ function criarCardSolicitacao(sol) {
                         <span>📍 ${localCompleto}</span>
                         <span>👨‍⚕️ ${sol.nomeSolicitante}</span>
                         <span>🕐 ${dataFormatada}</span>
+                        ${sol.status !== 'pendente' ? `<span>⏱️ ${tempoDecorrido}</span>` : ''}
                     </div>
                     <div style="margin-top: 10px; color: #555;">
                         <strong>Diagnóstico:</strong> ${sol.diagnostico}
                     </div>
+                    ${infoAlocacao}
                 </div>
             </div>
             
@@ -1324,19 +1349,40 @@ function criarCardSolicitacao(sol) {
                 </div>
             ` : ''}
             
-            <div class="solicitacao-acoes" style="margin-top: 15px;" onclick="event.stopPropagation()">
-                <button class="btn-acao btn-detalhes" onclick="verDetalhesSolicitacao('${sol.id}')">
-                    📋 Detalhes
-                </button>
-                <button class="btn-acao btn-aprovar" onclick="atualizarStatusSolicitacao('${sol.id}', 'aprovada')">
-                    ✅ Aprovar
-                </button>
-                <button class="btn-acao btn-negar" onclick="atualizarStatusSolicitacao('${sol.id}', 'negada')">
-                    ❌ Negar
-                </button>
-            </div>
+            ${sol.status === 'pendente' ? `
+                <div class="solicitacao-acoes" style="margin-top: 15px;" onclick="event.stopPropagation()">
+                    <button class="btn-acao btn-detalhes" onclick="verDetalhesSolicitacao('${sol.id}')">
+                        📋 Detalhes
+                    </button>
+                    <button class="btn-acao btn-aprovar" onclick="atualizarStatusSolicitacao('${sol.id}', 'aprovada')">
+                        ✅ Aprovar
+                    </button>
+                    <button class="btn-acao btn-negar" onclick="atualizarStatusSolicitacao('${sol.id}', 'negada')">
+                        ❌ Negar
+                    </button>
+                </div>
+            ` : ''}
         </div>
     `;
+}
+
+function calcularTempoDecorridoAtivo(dataInicio, id) {
+    const inicio = new Date(dataInicio);
+    const agora = new Date();
+    const diffMs = agora - inicio;
+    const diffMins = Math.floor(diffMs / 60000);
+    const horas = Math.floor(diffMins / 60);
+    const minutos = diffMins % 60;
+    
+    // Atualizar a cada minuto
+    setTimeout(() => {
+        const elemento = document.getElementById(`cronometro-${id}`);
+        if (elemento) {
+            elemento.textContent = calcularTempoDecorridoAtivo(dataInicio, id);
+        }
+    }, 60000);
+    
+    return `${horas}h ${minutos}min`;
 }
 
 function toggleSolicitacoes() {
@@ -1353,18 +1399,181 @@ function toggleSolicitacoes() {
 }
 
 function atualizarStatusSolicitacao(id, novoStatus) {
-    if (confirm(`Deseja realmente ${novoStatus === 'aprovada' ? 'aprovar' : 'negar'} esta solicitação?`)) {
-        db.collection('solicitacoes').doc(id).update({
-            status: novoStatus,
-            dataHoraAtualizacao: new Date().toISOString(),
-            atualizadoPor: currentUser ? currentUser.email : ''
-        })
-        .then(() => {
-            alert(`Solicitação ${novoStatus === 'aprovada' ? 'aprovada' : 'negada'} com sucesso!`);
-        })
-        .catch(error => {
-            alert('Erro ao atualizar: ' + error.message);
+    if (novoStatus === 'aprovada') {
+        // Ao aprovar, mostrar modal para escolher leito
+        abrirModalAlocacao(id);
+    } else {
+        // Negar normalmente
+        if (confirm('Deseja realmente negar esta solicitação?')) {
+            db.collection('solicitacoes').doc(id).update({
+                status: 'negada',
+                dataHoraAtualizacao: new Date().toISOString(),
+                atualizadoPor: currentUser ? currentUser.email : '',
+                tempoProcessamento: calcularTempoProcessamento(dadosSolicitacoes[id].dataHoraSolicitacao)
+            })
+            .then(() => {
+                alert('Solicitação negada com sucesso!');
+            })
+            .catch(error => {
+                alert('Erro ao atualizar: ' + error.message);
+            });
+        }
+    }
+}
+
+function calcularTempoProcessamento(dataInicio) {
+    const inicio = new Date(dataInicio);
+    const fim = new Date();
+    const diffMs = fim - inicio;
+    const diffMins = Math.floor(diffMs / 60000);
+    const horas = Math.floor(diffMins / 60);
+    const minutos = diffMins % 60;
+    return `${horas}h ${minutos}min`;
+}
+
+function abrirModalAlocacao(solicitacaoId) {
+    const sol = dadosSolicitacoes[solicitacaoId];
+    if (!sol) return;
+    
+    // Criar modal de alocação
+    const modal = document.createElement('div');
+    modal.id = 'modalAlocacao';
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10001;
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: white; padding: 30px; border-radius: 16px; max-width: 500px; width: 90%;">
+            <h2 style="color: #00796b; margin-bottom: 20px;">✅ Aprovar e Alocar Leito</h2>
+            <p style="margin-bottom: 20px;"><strong>Paciente:</strong> ${sol.nomePaciente}</p>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: bold;">Selecione o CTI:</label>
+                <select id="selectCTI" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;">
+                    <option value="">-- Selecione --</option>
+                    <option value="CTI1">CTI 1</option>
+                    <option value="CTI2">CTI 2</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: bold;">Selecione o Leito:</label>
+                <select id="selectLeito" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;" disabled>
+                    <option value="">-- Primeiro selecione o CTI --</option>
+                </select>
+            </div>
+            
+            <div style="background: #fff3e0; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ff9800;">
+                <strong>⚠️ Atenção:</strong> O leito será RESERVADO automaticamente e aparecerá como "Aguardando Admissão" no painel.
+            </div>
+            
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="fecharModalAlocacao()" style="padding: 12px 24px; background: #e0e0e0; color: #333; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                    Cancelar
+                </button>
+                <button onclick="confirmarAlocacao('${solicitacaoId}')" style="padding: 12px 24px; background: #26a69a; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                    ✅ Aprovar e Reservar
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Adicionar listener para popular leitos
+    document.getElementById('selectCTI').addEventListener('change', function() {
+        const cti = this.value;
+        const selectLeito = document.getElementById('selectLeito');
+        
+        if (!cti) {
+            selectLeito.disabled = true;
+            selectLeito.innerHTML = '<option value="">-- Primeiro selecione o CTI --</option>';
+            return;
+        }
+        
+        selectLeito.disabled = false;
+        selectLeito.innerHTML = '<option value="">-- Selecione o Leito --</option>';
+        
+        // Popular com leitos vagos
+        const leitos = cti === 'CTI1' ? leitosCTI1 : leitosCTI2;
+        leitos.forEach(num => {
+            const chave = `${cti}_${num}`;
+            const dadosPaciente = dadosLeitos[chave];
+            const dadosReserva = dadosReservas[chave];
+            
+            // Só mostrar leitos vagos
+            const isVago = (!dadosPaciente || !dadosPaciente.nome) && (!dadosReserva || dadosReserva.status !== 'reservado');
+            
+            if (isVago) {
+                const option = document.createElement('option');
+                option.value = num;
+                option.textContent = `Leito ${num}`;
+                selectLeito.appendChild(option);
+            }
         });
+        
+        if (selectLeito.options.length === 1) {
+            selectLeito.innerHTML = '<option value="">-- Nenhum leito vago disponível --</option>';
+            selectLeito.disabled = true;
+        }
+    });
+}
+
+function fecharModalAlocacao() {
+    const modal = document.getElementById('modalAlocacao');
+    if (modal) modal.remove();
+}
+
+async function confirmarAlocacao(solicitacaoId) {
+    const cti = document.getElementById('selectCTI').value;
+    const leito = document.getElementById('selectLeito').value;
+    
+    if (!cti || !leito) {
+        alert('⚠️ Por favor, selecione o CTI e o Leito!');
+        return;
+    }
+    
+    const sol = dadosSolicitacoes[solicitacaoId];
+    const chave = `${cti}_${leito}`;
+    const tempoProcessamento = calcularTempoProcessamento(sol.dataHoraSolicitacao);
+    
+    try {
+        // 1. Atualizar status da solicitação
+        await db.collection('solicitacoes').doc(solicitacaoId).update({
+            status: 'aprovada',
+            ctiAlocado: cti,
+            leitoAlocado: leito,
+            dataHoraAtualizacao: new Date().toISOString(),
+            atualizadoPor: currentUser ? currentUser.email : '',
+            tempoProcessamento: tempoProcessamento
+        });
+        
+        // 2. Reservar o leito
+        await db.collection('reservas').doc(chave).set({
+            status: 'reservado',
+            motivo: `Aguardando Admissão - ${sol.nomePaciente}`,
+            observacoes: `Paciente: ${sol.nomePaciente}\nIdade: ${sol.idade} anos\nDiagnóstico: ${sol.diagnostico}\nOrigem: ${sol.localAlocacao} - ${sol.leitoAlocacao || 'N/A'}\n\nSolicitação aprovada em: ${tempoProcessamento}`,
+            reservadoPor: currentUser ? currentUser.email : '',
+            dataReserva: new Date().toISOString(),
+            vinculoSolicitacao: solicitacaoId,
+            pacienteNome: sol.nomePaciente,
+            pacienteIdade: sol.idade
+        });
+        
+        fecharModalAlocacao();
+        alert(`✅ Solicitação aprovada com sucesso!\n\n${cti} - Leito ${leito} RESERVADO\nPaciente: ${sol.nomePaciente}\nTempo de processamento: ${tempoProcessamento}`);
+        
+    } catch (error) {
+        alert('❌ Erro ao aprovar: ' + error.message);
     }
 }
 
@@ -1486,6 +1695,66 @@ function mostrarAlertaNovaSolicitacao() {
 
 function tocarSom() {
     audioAlerta.play().catch(e => console.log('Erro ao tocar som:', e));
+}
+
+// ========== EXPORTAR PARA EXCEL ==========
+
+function exportarParaExcel() {
+    const todasSolicitacoes = Object.values(dadosSolicitacoes);
+    
+    if (todasSolicitacoes.length === 0) {
+        alert('⚠️ Não há solicitações para exportar!');
+        return;
+    }
+    
+    // Criar dados para Excel
+    let csv = 'sep=,\n'; // Para Excel abrir corretamente
+    
+    // Cabeçalho
+    csv += 'Status,Paciente,Idade,Diagnóstico,Origem,Leito Origem,Solicitante,';
+    csv += 'Data Solicitação,Prioridade,Hemodinâmica,Respiratória,Sepse,';
+    csv += 'CTI Alocado,Leito Alocado,Tempo Processamento,Atualizado Por,Data Atualização\n';
+    
+    // Dados
+    todasSolicitacoes.forEach(sol => {
+        const row = [
+            sol.status || '',
+            sol.nomePaciente || '',
+            sol.idade || '',
+            (sol.diagnostico || '').replace(/,/g, ';'), // Remover vírgulas
+            sol.localAlocacao || '',
+            sol.leitoAlocacao || '',
+            sol.nomeSolicitante || '',
+            new Date(sol.dataHoraSolicitacao).toLocaleString('pt-BR'),
+            sol.prioridade || '',
+            sol.instabilidadeHemodinamica ? 'Sim' : 'Não',
+            sol.instabilidadeRespiratoria ? 'Sim' : 'Não',
+            sol.sepse ? 'Sim' : 'Não',
+            sol.ctiAlocado || '',
+            sol.leitoAlocado || '',
+            sol.tempoProcessamento || calcularTempoProcessamento(sol.dataHoraSolicitacao),
+            sol.atualizadoPor || '',
+            sol.dataHoraAtualizacao ? new Date(sol.dataHoraAtualizacao).toLocaleString('pt-BR') : ''
+        ];
+        
+        csv += row.map(field => `"${field}"`).join(',') + '\n';
+    });
+    
+    // Download
+    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    const dataHora = new Date().toLocaleString('pt-BR').replace(/[/:]/g, '-').replace(',', '');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Solicitacoes_Vagas_UTI_${dataHora}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    alert(`✅ Relatório exportado com sucesso!\n\nTotal de solicitações: ${todasSolicitacoes.length}`);
 }
 
 // Enter para login
