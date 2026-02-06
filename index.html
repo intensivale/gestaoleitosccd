@@ -1321,7 +1321,7 @@ function criarCardSolicitacao(sol) {
             </div>
             
             ${sol.status === 'pendente' ? `
-                <div style="position: absolute; top: 15px; left: 15px; background: #ff9800; color: white; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                <div style="position: absolute; top: 15px; right: 15px; background: #ff9800; color: white; padding: 6px 12px; border-radius: 12px; font-size: 12px; font-weight: bold;">
                     ⏱️ <span id="cronometro-${sol.id}">${tempoDecorrido}</span>
                 </div>
             ` : ''}
@@ -1608,6 +1608,11 @@ Prioridade: ${sol.prioridade.toUpperCase()}
         if (sol.dataInicioMupirocina) {
             detalhes += `Data Início: ${sol.dataInicioMupirocina}\n`;
         }
+    }
+
+    if (sol.reservaHemodinamica) {
+        detalhes += `\n🩺 RESERVA HEMODINÂMICA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+        detalhes += `Data Reserva: ${sol.dataReservaHemodinamica || 'Não informada'}\n`;
     }
 
     if (sol.instabilidadeHemodinamica) {
