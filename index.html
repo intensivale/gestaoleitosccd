@@ -1581,106 +1581,189 @@ function verDetalhesSolicitacao(id) {
     const sol = dadosSolicitacoes[id];
     if (!sol) return;
     
-    let detalhes = `═══════════════════════════════════════
-📋 DETALHES DA SOLICITAÇÃO
-═══════════════════════════════════════
+    let detalhes = `═══════════════════════════════════════════════════════
+📋 RESUMO COMPLETO DA SOLICITAÇÃO
+═══════════════════════════════════════════════════════
 
 👤 DADOS DO PACIENTE
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Nome: ${sol.nomePaciente}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Nome do Paciente: ${sol.nomePaciente}
 Idade: ${sol.idade} anos
 Diagnóstico: ${sol.diagnostico}
-Local: ${sol.localAlocacao}${sol.leitoAlocacao ? ' - ' + sol.leitoAlocacao : ''}
+Local Atual: ${sol.localAlocacao}${sol.leitoAlocacao ? ' - ' + sol.leitoAlocacao : ''}
 Solicitante: ${sol.nomeSolicitante}
-Data/Hora: ${new Date(sol.dataHoraSolicitacao).toLocaleString('pt-BR')}
+Data/Hora Solicitação: ${new Date(sol.dataHoraSolicitacao).toLocaleString('pt-BR')}
 Prioridade: ${sol.prioridade.toUpperCase()}
+Status: ${sol.status.toUpperCase()}
 `;
 
-    if (sol.reservaCirurgica) {
-        detalhes += `\n🏥 CIRURGIA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-        detalhes += `Data: ${sol.dataCirurgia || 'Não informada'}\n`;
-        detalhes += `Hemocomponentes: ${sol.hemocomponentes || 'Não informado'}\n`;
+    // Mostrar alocação se aprovada
+    if (sol.status === 'aprovada' && sol.ctiAlocado) {
+        detalhes += `\n✅ ALOCAÇÃO APROVADA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CTI Alocado: ${sol.ctiAlocado.replace('CTI', 'CTI ')}
+Leito Alocado: ${sol.leitoAlocado}
+Tempo de Processamento: ${sol.tempoProcessamento || 'Não calculado'}
+Aprovado por: ${sol.atualizadoPor || 'Não informado'}
+Data/Hora Aprovação: ${sol.dataHoraAtualizacao ? new Date(sol.dataHoraAtualizacao).toLocaleString('pt-BR') : 'Não informada'}
+`;
     }
 
+    // RESERVA CIRÚRGICA
+    detalhes += `\n🏥 RESERVA CIRÚRGICA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Reserva Cirúrgica: ${sol.reservaCirurgica ? 'SIM' : 'NÃO'}`;
+    
+    if (sol.reservaCirurgica) {
+        detalhes += `
+Data da Cirurgia: ${sol.dataCirurgia || 'Não informada'}
+Hemocomponentes Reservados: ${sol.hemocomponentes || 'Não informado'}`;
+    }
+
+    // CIRURGIA CARDIOVASCULAR
+    detalhes += `\n\n❤️ CIRURGIA CARDIOVASCULAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Cirurgia Cardiovascular: ${sol.cardiovascular ? 'SIM' : 'NÃO'}`;
+    
     if (sol.cardiovascular) {
-        detalhes += `\n❤️ CARDIOVASCULAR\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-        detalhes += `Mupirocina: ${sol.mupirocina || 'Não informado'}\n`;
-        if (sol.dataInicioMupirocina) {
-            detalhes += `Data Início: ${sol.dataInicioMupirocina}\n`;
+        detalhes += `
+Mupirocina Realizada: ${sol.mupirocina || 'Não informado'}`;
+        if (sol.mupirocina === 'sim' && sol.dataInicioMupirocina) {
+            detalhes += `
+Data Início Mupirocina: ${sol.dataInicioMupirocina}`;
         }
     }
 
-    if (sol.reservaHemodinamica) {
-        detalhes += `\n🩺 RESERVA HEMODINÂMICA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-        detalhes += `Data Reserva: ${sol.dataReservaHemodinamica || 'Não informada'}\n`;
+    // RESERVA HEMODINÂMICA
+    detalhes += `\n\n🩺 RESERVA HEMODINÂMICA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Reserva Hemodinâmica: ${sol.reservaHemodinamica ? 'SIM' : 'NÃO'}`;
+    
+    if (sol.reservaHemodinamica && sol.dataReservaHemodinamica) {
+        detalhes += `
+Data da Reserva: ${sol.dataReservaHemodinamica}`;
     }
 
+    // INSTABILIDADE HEMODINÂMICA
+    detalhes += `\n\n💉 INSTABILIDADE HEMODINÂMICA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Instabilidade Hemodinâmica: ${sol.instabilidadeHemodinamica ? 'SIM' : 'NÃO'}`;
+    
     if (sol.instabilidadeHemodinamica) {
-        detalhes += `\n💉 HEMODINÂMICA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-        if (sol.drogas) {
+        if (sol.drogas && Object.keys(sol.drogas).length > 0) {
+            detalhes += `\nDrogas Vasoativas:`;
             Object.keys(sol.drogas).forEach(droga => {
-                detalhes += `${droga}: ${sol.drogas[droga]}\n`;
+                const nomeDroga = droga.charAt(0).toUpperCase() + droga.slice(1);
+                detalhes += `\n  • ${nomeDroga}: ${sol.drogas[droga]}`;
             });
         }
         if (sol.volumeInfundido) {
-            detalhes += `Volume: ${sol.volumeInfundido}\n`;
+            detalhes += `\nVolume Infundido: ${sol.volumeInfundido} ml`;
         }
     }
 
+    // INSTABILIDADE RESPIRATÓRIA
+    detalhes += `\n\n🫁 INSTABILIDADE RESPIRATÓRIA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Instabilidade Respiratória: ${sol.instabilidadeRespiratoria ? 'SIM' : 'NÃO'}`;
+    
     if (sol.instabilidadeRespiratoria) {
-        detalhes += `\n🫁 RESPIRATÓRIA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-        detalhes += `Aporte O₂: ${sol.aporteO2 || 'Não informado'}\n`;
+        detalhes += `
+Aporte de O₂: ${sol.aporteO2 || 'Não informado'}`;
+        
         if (sol.litrosO2) {
-            detalhes += `Litros/FiO₂: ${sol.litrosO2}\n`;
+            detalhes += `
+Litros/FiO₂: ${sol.litrosO2}`;
         }
-        if (sol.vm) {
-            detalhes += `Modo VM: ${sol.vm.modo}\n`;
-            detalhes += `PS/Pinsp: ${sol.vm.ps}\n`;
-            detalhes += `VC: ${sol.vm.vc}\n`;
-            detalhes += `FR: ${sol.vm.fr}\n`;
-            detalhes += `PEEP: ${sol.vm.peep}\n`;
-            detalhes += `FiO₂: ${sol.vm.fio2}\n`;
-            detalhes += `Ppico: ${sol.vm.ppico}\n`;
+        
+        if (sol.aporteO2 === 'VM' && sol.vm) {
+            detalhes += `
+Parâmetros Ventilatórios:
+  • Modo: ${sol.vm.modo || 'Não informado'}
+  • PS/Pinsp: ${sol.vm.ps || 'Não informado'}
+  • VC: ${sol.vm.vc || 'Não informado'} ml
+  • FR: ${sol.vm.fr || 'Não informado'} irpm
+  • PEEP: ${sol.vm.peep || 'Não informado'} cmH₂O
+  • FiO₂: ${sol.vm.fio2 || 'Não informado'} %
+  • Ppico: ${sol.vm.ppico || 'Não informado'} cmH₂O`;
         }
     }
 
+    // SEPSE
+    detalhes += `\n\n🦠 SEPSE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Sepse: ${sol.sepse ? 'SIM' : 'NÃO'}`;
+    
     if (sol.sepse) {
-        detalhes += `\n🦠 SEPSE\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
         if (sol.antibioticos && sol.antibioticos.length > 0) {
-            detalhes += `Antibióticos: ${sol.antibioticos.join(', ')}\n`;
+            detalhes += `
+Antibióticos em Uso:`;
+            sol.antibioticos.forEach((atb, i) => {
+                detalhes += `\n  ${i + 1}. ${atb}`;
+            });
+        } else {
+            detalhes += `
+Antibióticos: Nenhum informado`;
         }
-        detalhes += `Culturas: ${sol.culturasColetadas || 'Não informado'}\n`;
-        if (sol.tiposCultura && sol.tiposCultura.length > 0) {
-            detalhes += `Tipos: ${sol.tiposCultura.join(', ')}\n`;
+        
+        detalhes += `\nCulturas Coletadas: ${sol.culturasColetadas || 'Não informado'}`;
+        
+        if (sol.culturasColetadas === 'sim' && sol.tiposCultura && sol.tiposCultura.length > 0) {
+            detalhes += `
+Tipos de Cultura:`;
+            sol.tiposCultura.forEach(tipo => {
+                detalhes += `\n  • ${tipo}`;
+            });
         }
-        if (sol.motivoNaoCultura) {
-            detalhes += `Motivo: ${sol.motivoNaoCultura}\n`;
+        
+        if (sol.culturasColetadas === 'nao' && sol.motivoNaoCultura) {
+            detalhes += `
+Motivo Não Coletou: ${sol.motivoNaoCultura}`;
         }
     }
 
+    // ISOLAMENTO RESPIRATÓRIO
+    detalhes += `\n\n😷 ISOLAMENTO RESPIRATÓRIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Isolamento Respiratório: ${sol.isolamentoRespiratorio ? 'SIM' : 'NÃO'}`;
+
+    // DISPOSITIVOS INVASIVOS
+    detalhes += `\n\n💉 DISPOSITIVOS INVASIVOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`;
+    
     if (sol.invasivos && sol.invasivos.length > 0) {
-        detalhes += `\n💉 INVASIVOS\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
         sol.invasivos.forEach((inv, i) => {
-            detalhes += `${i + 1}. ${inv.descricao} (${inv.dataInsercao || 'Data não informada'})\n`;
+            detalhes += `\n  ${i + 1}. ${inv.descricao}`;
+            if (inv.dataInsercao) {
+                detalhes += ` - Inserido em: ${inv.dataInsercao}`;
+            }
         });
+    } else {
+        detalhes += `\nNenhum dispositivo invasivo`;
     }
 
+    // INSUFICIÊNCIA RENAL
+    detalhes += `\n\n🩺 FUNÇÃO RENAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Insuficiência Renal: ${sol.insuficienciaRenal ? 'SIM' : 'NÃO'}`;
+    
     if (sol.insuficienciaRenal) {
-        detalhes += `\n🩺 FUNÇÃO RENAL\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-        detalhes += `Creatinina: ${sol.creatinina || 'Não informada'}\n`;
-        detalhes += `Ureia: ${sol.ureia || 'Não informada'}\n`;
+        detalhes += `
+Creatinina: ${sol.creatinina || 'Não informada'} mg/dL
+Ureia: ${sol.ureia || 'Não informada'} mg/dL`;
     }
 
-    if (sol.alteracaoConsciencia) {
-        detalhes += `\n🧠 CONSCIÊNCIA\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-        detalhes += `Glasgow: ${sol.glasgow || 'Não informado'}\n`;
+    // ALTERAÇÃO DE CONSCIÊNCIA
+    detalhes += `\n\n🧠 NÍVEL DE CONSCIÊNCIA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Alteração de Consciência: ${sol.alteracaoConsciencia ? 'SIM' : 'NÃO'}`;
+    
+    if (sol.alteracaoConsciencia && sol.glasgow) {
+        detalhes += `
+Escala de Glasgow: ${sol.glasgow}`;
     }
 
-    if (sol.isolamentoRespiratorio) {
-        detalhes += `\n😷 ISOLAMENTO RESPIRATÓRIO\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nSim\n`;
-    }
-
-    detalhes += `\n═══════════════════════════════════════`;
+    detalhes += `\n\n═══════════════════════════════════════════════════════`;
 
     alert(detalhes);
 }
